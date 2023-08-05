@@ -89,7 +89,7 @@ public enum RFC6979 {
 		let sig: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
 		defer { sig.deallocate() }
 
-		let rec = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
+		let rec: UnsafeMutablePointer<Int32> = .allocate(capacity: 1)
 		defer { rec.deallocate() }
 
 		rec.pointee = 69
@@ -118,11 +118,18 @@ public enum RFC6979 {
 
 		let sig = signature.serialize()
 
+		let pub: UnsafeMutableBufferPointer<UInt8> = .allocate(capacity: 64)
+		defer { pub.deallocate() }
+
+		if publicKey.count == 65, publicKey[0] == 4 {
+			_ = pub.initialize(from: publicKey[1 ..< 65])
+		} else {
+			_ = pub.initialize(from: publicKey[0 ..< 64])
+		}
+
 		let c = digest.withUnsafeBytes { d in
 			sig.withUnsafeBytes { s in
-				publicKey.withUnsafeBytes { p in
-					verify_rfc6979(p.baseAddress, d.baseAddress, 32, s.baseAddress, curve.load)
-				}
+				verify_rfc6979(pub.baseAddress, d.baseAddress, 32, s.baseAddress, curve.load)
 			}
 		}
 		if c == 0 {

@@ -43,8 +43,6 @@ class MainTests: XCTestCase {
 	}
 
 	func testPublicKey() throws {
-		print(self.publicKeyHex)
-		print(self.privateKeyOpensslPem)
 		XCTAssertEqual(self.publicKeyAddressHex, "abA79210c75E82Daeb2753CA82a7A41f3db05D78".lowercased())
 	}
 
@@ -63,7 +61,7 @@ class MainTests: XCTestCase {
 	}
 
 	func testVerifyEthereumMessage() throws {
-		let res = try RFC6979.verify(.secp256k1, .EthereumTransaction, message: self.messageData, signature: self.messageSignature, publicKey: self.publicKeyData)
+		let res = try RFC6979.verify(.secp256k1, .EthereumMessage, message: self.messageData, signature: self.messageSignature, publicKey: self.publicKeyData)
 
 		XCTAssertTrue(res)
 	}
