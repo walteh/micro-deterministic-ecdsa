@@ -20,12 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define decshake(bits) int shake##bits(uint8_t *, size_t, const uint8_t *, size_t);
+#define decsha3(bits)                                                     \
+	int sha3_raw_##bits(uint8_t *, size_t, const uint8_t *, size_t, int); \
+	int sha3_std_##bits(uint8_t *, size_t, const uint8_t *, size_t);      \
+	int sha3_eth_##bits(uint8_t *, size_t, const uint8_t *, size_t);
 
-#define decsha3(bits) int sha3_##bits(uint8_t *, size_t, const uint8_t *, size_t);
-
-decshake(128) decshake(256) decsha3(224) decsha3(256) decsha3(384) decsha3(512)
-
-	int sha3_ethereum256(uint8_t *, size_t, const uint8_t *, size_t);
+decsha3(224) decsha3(256) decsha3(384) decsha3(512)
 
 #endif /* sha3_h */

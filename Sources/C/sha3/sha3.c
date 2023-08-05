@@ -13,7 +13,7 @@
 
 #include "sha3.h"
 
-decshake(128) decshake(256) decsha3(224) decsha3(256) decsha3(384) decsha3(512)
+decsha3(224) decsha3(256) decsha3(384) decsha3(512)
 
 	/******** The Keccak-f[1600] permutation ********/
 
@@ -106,31 +106,9 @@ mkapply_ds(xorin, dst[i] ^= src[i])		// xorin
 	}
 
 	/** The sponge-based hash construction. **/
-	static inline int hash(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, size_t rate, uint8_t delim) {
-	if ((out == NULL) || ((in == NULL) && inlen != 0) || (rate >= Plen)) {
-		return -1;
-	}
-	uint8_t a[Plen] = {0};
-	// Absorb input.
-	foldP(in, inlen, xorin);
-	// Xor in the DS and pad frame.
-	a[inlen] ^= delim;
-	a[rate - 1] ^= 0x80;
-	// Xor in the last block.
-	xorin(a, in, inlen);
-	// Apply P
-	P(a);
-	// Squeeze output.
-	foldP(out, outlen, setout);
-	setout(a, out, outlen);
-
-	memset_s(a, 200, 0, 200);
-
-	return 0;
-}
-
-/** The sponge-based hash construction. **/
-static inline int hash_eth(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, size_t rate, uint8_t delim) {
+	static inline int hash(
+		uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, size_t rate, uint8_t delim, int opt
+	) {
 	if ((out == NULL) || ((in == NULL) && inlen != 0) || (rate >= Plen)) {
 		return -1;
 	}
@@ -150,26 +128,31 @@ static inline int hash_eth(uint8_t *out, size_t outlen, const uint8_t *in, size_
 
 	////////////////////////////////////////////
 	/// modified for ethereum keccak256 - walter
-	/// before: memset_s(a, 200, 0, 200);
-	memset(a, 0, 200);
+	if (opt == 1) {
+		// Ethereum compatibility.
+		// Clear the last block.
+		memset(a, 0, 200);
+	} else {
+		// Clear the whole buffer.
+		memset_s(a, 200, 0, 200);
+	}
 	///////////////////////////////////////////
 
 	return 0;
 }
 
-int sha3_ethereum256(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen) {
-	if (outlen > (256 / 8)) {
-		return -1;
+#define defsha3(bits)                                                                            \
+	int sha3_raw_##bits(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt) { \
+		if (outlen > (bits / 8)) {                                                               \
+			return -1;                                                                           \
+		}                                                                                        \
+		return hash(out, outlen, in, inlen, 200 - (bits / 4), 0x01, opt);                        \
+	}                                                                                            \
+	int sha3_std_##bits(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen) {          \
+		return sha3_raw_##bits(out, outlen, in, inlen, 0);                                       \
+	}                                                                                            \
+	int sha3_eth_##bits(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen) {          \
+		return sha3_raw_##bits(out, outlen, in, inlen, 1);                                       \
 	}
-	return hash_eth(out, outlen, in, inlen, 200 - (256 / 4), 0x01);
-}
 
-#define defsha3(bits)                                                               \
-	int sha3_##bits(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen) { \
-		if (outlen > (bits / 8)) {                                                  \
-			return -1;                                                              \
-		}                                                                           \
-		return hash(out, outlen, in, inlen, 200 - (bits / 4), 0x01);                \
-	}
-/*** FIPS202 SHA3 FOFs ***/
 defsha3(224) defsha3(256) defsha3(384) defsha3(512)

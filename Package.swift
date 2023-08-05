@@ -10,31 +10,15 @@ let package = Package(
 	],
 	products: [
 		.library(
-			name: "ecdsa",
-			targets: ["ecdsa/swift"]
+			name: "swift-ecc",
+			targets: ["SwiftECC"]
 		),
 	],
-	dependencies: [
-	],
+	dependencies: [],
 	targets: [
-		.target(
-			name: "ecdsa/swift",
-			dependencies: [
-				.target(name: "ecdsa/c"),
-			],
-			path: "./swift"
-		),
-		.target(
-			name: "ecdsa/c",
-			path: "./c",
-			publicHeadersPath: "."
-		),
-		.testTarget(
-			name: "ecdsa/tests",
-			dependencies: [
-				.target(name: "ecdsa/swift"),
-			],
-			path: "./tests"
-		),
+		.target(name: "C/sha3"),
+		.target(name: "C/rfc6979"),
+		.target(name: "SwiftECC", dependencies: ["C/sha3", "C/rfc6979"]),
+		.testTarget(name: "SwiftECCTests", dependencies: ["SwiftECC"]),
 	]
 )
