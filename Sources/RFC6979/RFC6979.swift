@@ -66,6 +66,13 @@ public enum RFC6979 {
 			res.append(Data([self.v]))
 			return res
 		}
+
+		public static func fromSerialized(_ data: Data) -> Signature {
+			let r = data.subdata(in: 0 ..< 32)
+			let s = data.subdata(in: 32 ..< 64)
+			let v = data.subdata(in: 64 ..< 65).first!
+			return Signature(s: s, r: r, v: v)
+		}
 	}
 
 	static func hash(_ algo: SHA3Algorithm, _ bits: Int32, _ data: Data) -> Data {
@@ -78,10 +85,12 @@ public enum RFC6979 {
 		return Data(bytes: result, count: 32)
 	}
 
-	static func signDeterministic(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, privateKey: Data) throws -> RFC6979.Signature {
-		var sig: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
+	static func sign(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, privateKey: Data) throws -> RFC6979.Signature {
+		let sig: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
+		defer { sig.deallocate() }
 
 		let rec = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
+		defer { rec.deallocate() }
 
 		rec.pointee = 69
 
@@ -95,20 +104,87 @@ public enum RFC6979 {
 			throw RFC6979.Error.invalidKey
 		}
 
-		var r: [UInt8] = []
-		for _ in 0 ..< 32 {
-			r.append(sig.pointee)
-			sig = sig.successor()
-		}
+		let signatureBytes = UnsafeBufferPointer(start: sig, count: 64)
 
-		var s: [UInt8] = []
-		for _ in 32 ..< 64 {
-			s.append(sig.pointee)
-			sig = sig.successor()
-		}
-
-		return .init(s: Data(s), r: Data(r), v: strategy.buildRecID(UInt8(rec.pointee)))
+		return .init(
+			s: Data(signatureBytes[32 ..< 64]),
+			r: Data(signatureBytes[0 ..< 32]),
+			v: strategy.buildRecID(UInt8(rec.pointee))
+		)
 	}
+
+	static func verify(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, signature: RFC6979.Signature, publicKey: Data) throws -> Bool {
+		let digest = strategy.hasher(message)
+
+		let sig = signature.serialize()
+
+		let c = digest.withUnsafeBytes { d in
+			sig.withUnsafeBytes { s in
+				publicKey.withUnsafeBytes { p in
+					verify_rfc6979(p.baseAddress, d.baseAddress, 32, s.baseAddress, curve.load)
+				}
+			}
+		}
+		if c == 0 {
+			throw RFC6979.Error.invalidSignature
+		}
+		return true
+	}
+
+	static func publicKey(_ curve: RFC6979.Curve, privateKey: Data) throws -> Data {
+		let pub: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
+		defer { pub.deallocate() }
+
+		let c = privateKey.withUnsafeBytes { privPointer in
+			compute_public_key_rfc6979(privPointer.baseAddress, pub, curve.load)
+		}
+
+		if c == 0 {
+			throw RFC6979.Error.invalidKey
+		}
+
+		return Data([4]) + Data(UnsafeBufferPointer(start: pub, count: 64))
+	}
+
+	static func publicKeyToAddress(_ publicKey: Data) -> Data {
+		var wrk = publicKey
+		// remove the 0x04 prefix if present
+		if publicKey.count == 65, publicKey[0] == 4 {
+			wrk = publicKey[1 ..< 65]
+		}
+		return RFC6979.hash(.Ethereum, 256, wrk)[12 ..< 32]
+	}
+
+	// static func recover(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, signature: RFC6979.Signature) throws -> Data {
+	// 	let digest = strategy.hasher(message)
+
+	// 	let sig = signature.serialize()
+
+	// 	var pub: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
+
+	// 	let c = digest.withUnsafeBytes { d in
+	// 		sig.withUnsafeBytes { s in
+	// 			recover_public_key_rfc6979(d.baseAddress, s.baseAddress, pub, curve.load)
+	// 		}
+	// 	}
+	// 	if c == 0 {
+	// 		throw RFC6979.Error.invalidSignature
+	// 	}
+
+	// 	var x: [UInt8] = []
+	// 	for _ in 0 ..< 32 {
+	// 		x.append(pub.pointee)
+	// 		pub = pub.successor()
+	// 	}
+
+	// 	var y: [UInt8] = []
+	// 	for _ in 32 ..< 64 {
+	// 		y.append(pub.pointee)
+	// 		pub = pub.successor()
+	// 	}
+
+	// 	return Data([4]) + Data(x) + Data(y)
+	// }
 
 	static func hexToData(_ dat: String) -> Data? {
 		let hexStr = dat.dropFirst(dat.hasPrefix("0x") ? 2 : 0)

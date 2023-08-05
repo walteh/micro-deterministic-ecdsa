@@ -17,18 +17,18 @@ let package = Package(
 	dependencies: [],
 	targets: [
 		.target(
-			name: "CRFC6979",
-			cSettings: [.unsafeFlags(["-fprofile-instr-generate", "-fcoverage-mapping"])]
+			name: "CRFC6979"
+			// cSettings: [.unsafeFlags(["-fprofile-instr-generate", "-fcoverage-mapping"])]
 		),
 		.target(
 			name: "RFC6979",
-			dependencies: ["CRFC6979"],
-			cSettings: [.unsafeFlags(["-fprofile-instr-generate", "-fcoverage-mapping"])]
+			dependencies: ["CRFC6979"]
+			// cSettings: [.unsafeFlags(["-fprofile-instr-generate", "-fcoverage-mapping"])]
 		),
 		.testTarget(
 			name: "RFC6979Tests",
-			dependencies: ["RFC6979", "CRFC6979"],
-			cSettings: [.unsafeFlags(["-fprofile-instr-generate", "-fcoverage-mapping"])]
+			dependencies: ["RFC6979", "CRFC6979"]
+			// cSettings: [.unsafeFlags(["-fprofile-instr-generate", "-fcoverage-mapping"])]
 		),
 	]
 )
