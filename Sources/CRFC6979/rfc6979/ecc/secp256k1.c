@@ -8,7 +8,7 @@
 //  Copyright © 2015, Kenneth MacKay. BSD 2-clause license
 // ---------------------------------------------------------------------
 
-#if uECC_SUPPORTS_secp256k1
+#include "secp256k1.h"
 
 static const struct uECC_Curve_t curve_secp256k1 = {
 	num_words_secp256k1,
@@ -41,34 +41,6 @@ static const struct uECC_Curve_t curve_secp256k1 = {
 	&vli_mmod_fast_secp256k1};
 
 uECC_Curve uECC_secp256k1(void) { return &curve_secp256k1; }
-
-/* Compute a = sqrt(a) (mod curve_p). */
-static void mod_sqrt_default(uECC_word_t *a, uECC_Curve curve) {
-	bitcount_t i;
-	uECC_word_t p1[uECC_MAX_WORDS]		 = {1};
-	uECC_word_t l_result[uECC_MAX_WORDS] = {1};
-	wordcount_t num_words				 = curve->num_words;
-
-	/* When curve->p == 3 (mod 4), we can compute
-	   sqrt(a) = a^((curve->p + 1) / 4) (mod curve->p). */
-	uECC_vli_add(p1, curve->p, p1, num_words); /* p1 = curve_p + 1 */
-	for (i = uECC_vli_numBits(p1, num_words) - 1; i > 1; --i) {
-		uECC_vli_modSquare_fast(l_result, l_result, curve);
-		if (uECC_vli_testBit(p1, i)) {
-			uECC_vli_modMult_fast(l_result, l_result, a, curve);
-		}
-	}
-	uECC_vli_set(a, l_result, num_words);
-}
-#endif /* uECC_SUPPORTS_secp... */
-
-#if uECC_SUPPORTS_secp256k1
-
-static void double_jacobian_secp256k1(uECC_word_t *X1, uECC_word_t *Y1, uECC_word_t *Z1, uECC_Curve curve);
-static void x_side_secp256k1(uECC_word_t *result, const uECC_word_t *x, uECC_Curve curve);
-#if (uECC_OPTIMIZATION_LEVEL > 0)
-static void vli_mmod_fast_secp256k1(uECC_word_t *result, uECC_word_t *product);
-#endif
 
 /* Double in place */
 static void double_jacobian_secp256k1(uECC_word_t *X1, uECC_word_t *Y1, uECC_word_t *Z1, uECC_Curve curve) {
@@ -113,8 +85,23 @@ static void x_side_secp256k1(uECC_word_t *result, const uECC_word_t *x, uECC_Cur
 	uECC_vli_modAdd(result, result, curve->b, curve->p, num_words_secp256k1); /* r = x^3 + b */
 }
 
-#if (uECC_OPTIMIZATION_LEVEL > 0 && !asm_mmod_fast_secp256k1)
-static void omega_mult_secp256k1(uECC_word_t *result, const uECC_word_t *right);
+static void omega_mult_secp256k1(uint64_t *result, const uint64_t *right) {
+	uECC_word_t r0 = 0;
+	uECC_word_t r1 = 0;
+	uECC_word_t r2 = 0;
+	wordcount_t k;
+
+	/* Multiply by (2^32 + 2^9 + 2^8 + 2^7 + 2^6 + 2^4 + 1). */
+	for (k = 0; k < num_words_secp256k1; ++k) {
+		muladd(0x1000003D1ull, right[k], &r0, &r1, &r2);
+		result[k] = r0;
+		r0		  = r1;
+		r1		  = r2;
+		r2		  = 0;
+	}
+	result[num_words_secp256k1] = r0;
+}
+
 static void vli_mmod_fast_secp256k1(uECC_word_t *result, uECC_word_t *product) {
 	uECC_word_t tmp[2 * num_words_secp256k1];
 	uECC_word_t carry;
@@ -137,25 +124,3 @@ static void vli_mmod_fast_secp256k1(uECC_word_t *result, uECC_word_t *product) {
 		uECC_vli_sub(result, result, curve_secp256k1.p, num_words_secp256k1);
 	}
 }
-
-static void omega_mult_secp256k1(uint64_t *result, const uint64_t *right) {
-	uECC_word_t r0 = 0;
-	uECC_word_t r1 = 0;
-	uECC_word_t r2 = 0;
-	wordcount_t k;
-
-	/* Multiply by (2^32 + 2^9 + 2^8 + 2^7 + 2^6 + 2^4 + 1). */
-	for (k = 0; k < num_words_secp256k1; ++k) {
-		muladd(0x1000003D1ull, right[k], &r0, &r1, &r2);
-		result[k] = r0;
-		r0		  = r1;
-		r1		  = r2;
-		r2		  = 0;
-	}
-	result[num_words_secp256k1] = r0;
-}
-
-#endif /* (uECC_OPTIMIZATION_LEVEL > 0 &&  && !asm_mmod_fast_secp256k1) */
-
-#endif /* uECC_SUPPORTS_secp256k1 */
-// #endif /* curve_h */

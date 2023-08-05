@@ -6,10 +6,8 @@
 //
 
 import Foundation
-import SHA3
 
-import C_rfc6979
-import C_sha3
+import CRFC6979
 
 public enum RFC6979 {
 	public enum Error: Swift.Error {
@@ -21,7 +19,7 @@ public enum RFC6979 {
 		case invalidRecID
 	}
 
-	public enum SHA3Algorithm: Int {
+	public enum SHA3Algorithm: Int32 {
 		case Ethereum = 1
 		case Standard = 0
 	}
@@ -37,22 +35,22 @@ public enum RFC6979 {
 
 	public enum Strategy {
 		case EthereumRecoverable
-		// case eth_message
 		case EthereumTransaction
+		case EthereumMessage
 
 		var hasher: (Data) -> Data {
 			switch self {
-			case .EthereumRecoverable, .EthereumTransaction: return { x in RFC6979.hash(.ethereum, 256, x) }
-				// case .eth_message: return { x in "\\x19Ethereum Signed Message:\\n32\(x.sha3(.ethereum).hexEncodedString(prefixed: false))".data(using: .utf8)!.sha3(.ethereum) }
+			case .EthereumRecoverable, .EthereumTransaction: return { message in RFC6979.hash(.Ethereum, 256, message) }
+			case .EthereumMessage: return { message in
+					RFC6979.hash(.Ethereum, 256, "\u{19}Ethereum Signed Message:\n\(message.count)".data(using: .ascii)! + message)
+				}
 			}
 		}
 
 		var buildRecID: (UInt8) -> UInt8 {
 			switch self {
 			case .EthereumRecoverable: return { x in x }
-			case .EthereumTransaction: return { x in x + 27 }
-				//
-				// case .eth_message: return { x in x + 27 }
+			case .EthereumTransaction, .EthereumMessage: return { x in x + 27 }
 			}
 		}
 	}
@@ -70,7 +68,7 @@ public enum RFC6979 {
 		}
 	}
 
-	func hash(_ algo: SHA3Algorithm, _ bits: Int, _ data: Data) -> Data {
+	static func hash(_ algo: SHA3Algorithm, _ bits: Int32, _ data: Data) -> Data {
 		let nsData = data as NSData
 		let input = nsData.bytes.bindMemory(to: UInt8.self, capacity: data.count)
 		let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 32)
@@ -80,7 +78,7 @@ public enum RFC6979 {
 		return Data(bytes: result, count: 32)
 	}
 
-	func signDeterministic(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, privateKey: Data) throws -> RFC6979.Signature {
+	static func signDeterministic(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, privateKey: Data) throws -> RFC6979.Signature {
 		var sig: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
 
 		let rec = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
@@ -110,5 +108,28 @@ public enum RFC6979 {
 		}
 
 		return .init(s: Data(s), r: Data(r), v: strategy.buildRecID(UInt8(rec.pointee)))
+	}
+
+	static func hexToData(_ dat: String) -> Data? {
+		let hexStr = dat.dropFirst(dat.hasPrefix("0x") ? 2 : 0)
+
+		guard hexStr.count % 2 == 0 else { return nil }
+
+		var newData = Data(capacity: hexStr.count / 2)
+
+		var indexIsEven = true
+		for i in hexStr.indices {
+			if indexIsEven {
+				let byteRange = i ... hexStr.index(after: i)
+				guard let byte = UInt8(hexStr[byteRange], radix: 16) else { return nil }
+				newData.append(byte)
+			}
+			indexIsEven.toggle()
+		}
+		return newData
+	}
+
+	static func dataToHex(_ dat: Data) -> String {
+		return dat.map { String(format: "%02hhx", $0) }.joined()
 	}
 }

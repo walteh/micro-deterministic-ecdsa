@@ -30,4 +30,6 @@ struct uECC_Curve_t {
 /* Computes result = left^2 % curve->p. */
 void uECC_vli_modSquare_fast(uECC_word_t *result, const uECC_word_t *left, uECC_Curve curve);
 
+void mod_sqrt_default(uECC_word_t *a, uECC_Curve curve);
+
 #endif /* curve_h */

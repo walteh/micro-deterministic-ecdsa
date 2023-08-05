@@ -27,3 +27,21 @@ void uECC_vli_mod_sqrt(uECC_word_t *a, uECC_Curve curve) { curve->mod_sqrt(a, cu
 void uECC_vli_mmod_fast(uECC_word_t *result, uECC_word_t *product, uECC_Curve curve) {
 	curve->mmod_fast(result, product);
 }
+
+void mod_sqrt_default(uECC_word_t *a, uECC_Curve curve) {
+	bitcount_t i;
+	uECC_word_t p1[uECC_MAX_WORDS]		 = {1};
+	uECC_word_t l_result[uECC_MAX_WORDS] = {1};
+	wordcount_t num_words				 = curve->num_words;
+
+	/* When curve->p == 3 (mod 4), we can compute
+	   sqrt(a) = a^((curve->p + 1) / 4) (mod curve->p). */
+	uECC_vli_add(p1, curve->p, p1, num_words); /* p1 = curve_p + 1 */
+	for (i = uECC_vli_numBits(p1, num_words) - 1; i > 1; --i) {
+		uECC_vli_modSquare_fast(l_result, l_result, curve);
+		if (uECC_vli_testBit(p1, i)) {
+			uECC_vli_modMult_fast(l_result, l_result, a, curve);
+		}
+	}
+	uECC_vli_set(a, l_result, num_words);
+}

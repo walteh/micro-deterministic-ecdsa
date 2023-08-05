@@ -1,4 +1,4 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.8
 
 import PackageDescription
 
@@ -11,14 +11,13 @@ let package = Package(
 	products: [
 		.library(
 			name: "swift-rfc6979",
-			targets: ["SwiftRFC6979"]
+			targets: ["RFC6979"]
 		),
 	],
 	dependencies: [],
 	targets: [
-		.target(name: "C/sha3"),
-		.target(name: "C/rfc6979"),
-		.target(name: "SwiftRFC6979", dependencies: ["C/sha3", "C/rfc6979"]),
-		.testTarget(name: "SwiftRFC6979Tests", dependencies: ["SwiftRFC6979"]),
+		.target(name: "CRFC6979"),
+		.target(name: "RFC6979", dependencies: ["CRFC6979"]),
+		.testTarget(name: "RFC6979Tests", dependencies: ["RFC6979"]),
 	]
 )
