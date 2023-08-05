@@ -5,7 +5,6 @@
 			"name": "root"
 		},
 	],
-
 	"settings": {
 		"git.followTagsWhenSync": true,
 		// "yaml.format.enable": true,
@@ -55,6 +54,5 @@
 			".swift-format": "jsonc",
 		},
 		"explorer.sortOrder": "type",
-		"lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",
 	}
 }

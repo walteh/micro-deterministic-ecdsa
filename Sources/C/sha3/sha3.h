@@ -20,11 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define decsha3(bits)                                                     \
-	int sha3_raw_##bits(uint8_t *, size_t, const uint8_t *, size_t, int); \
-	int sha3_std_##bits(uint8_t *, size_t, const uint8_t *, size_t);      \
-	int sha3_eth_##bits(uint8_t *, size_t, const uint8_t *, size_t);
-
-decsha3(224) decsha3(256) decsha3(384) decsha3(512)
+int sha3_raw(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt, int bits);
 
 #endif /* sha3_h */

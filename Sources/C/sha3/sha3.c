@@ -13,13 +13,11 @@
 
 #include "sha3.h"
 
-decsha3(224) decsha3(256) decsha3(384) decsha3(512)
+/******** The Keccak-f[1600] permutation ********/
 
-	/******** The Keccak-f[1600] permutation ********/
-
-	/*** Constants. ***/
-	static const uint8_t rho[24] = {1,	3,	6,	10, 15, 21, 28, 36, 45, 55, 2,	14,
-									27, 41, 56, 8,	25, 43, 62, 18, 39, 61, 20, 44};
+/*** Constants. ***/
+static const uint8_t rho[24] = {1,	3,	6,	10, 15, 21, 28, 36, 45, 55, 2,	14,
+								27, 41, 56, 8,	25, 43, 62, 18, 39, 61, 20, 44};
 static const uint8_t pi[24]	 = {10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4, 15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1};
 static const uint64_t RC[24] = {
 	1ULL,
@@ -141,18 +139,9 @@ mkapply_ds(xorin, dst[i] ^= src[i])		// xorin
 	return 0;
 }
 
-#define defsha3(bits)                                                                            \
-	int sha3_raw_##bits(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt) { \
-		if (outlen > (bits / 8)) {                                                               \
-			return -1;                                                                           \
-		}                                                                                        \
-		return hash(out, outlen, in, inlen, 200 - (bits / 4), 0x01, opt);                        \
-	}                                                                                            \
-	int sha3_std_##bits(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen) {          \
-		return sha3_raw_##bits(out, outlen, in, inlen, 0);                                       \
-	}                                                                                            \
-	int sha3_eth_##bits(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen) {          \
-		return sha3_raw_##bits(out, outlen, in, inlen, 1);                                       \
+int sha3_raw(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt, int bits) {
+	if (outlen > (bits / 8)) {
+		return -1;
 	}
-
-defsha3(224) defsha3(256) defsha3(384) defsha3(512)
+	return hash(out, outlen, in, inlen, 200 - (bits / 4), 0x01, opt);
+}

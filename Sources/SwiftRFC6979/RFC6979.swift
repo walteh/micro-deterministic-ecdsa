@@ -1,5 +1,5 @@
 //
-//  ECC.swift
+//  RFC6979.swift
 //
 //  Created by walteh on 12/5/22.
 //  Copyright © 2022 Walter Scott. All rights reserved.
@@ -8,10 +8,10 @@
 import Foundation
 import SHA3
 
-import c_rfc6979
-import c_sha3
+import C_rfc6979
+import C_sha3
 
-public enum ECC {
+public enum RFC6979 {
 	public enum Error: Swift.Error {
 		case invalidKey
 		case invalidSignature
@@ -21,9 +21,9 @@ public enum ECC {
 		case invalidRecID
 	}
 
-	public enum SHA3Algorithm {
-		case Ethereum
-		case Standard
+	public enum SHA3Algorithm: Int {
+		case Ethereum = 1
+		case Standard = 0
 	}
 
 	public enum Curve {
@@ -42,7 +42,7 @@ public enum ECC {
 
 		var hasher: (Data) -> Data {
 			switch self {
-			case .EthereumRecoverable, .EthereumTransaction: return { x in ECDSA.hash(.ethereum, x) }
+			case .EthereumRecoverable, .EthereumTransaction: return { x in RFC6979.hash(.ethereum, 256, x) }
 				// case .eth_message: return { x in "\\x19Ethereum Signed Message:\\n32\(x.sha3(.ethereum).hexEncodedString(prefixed: false))".data(using: .utf8)!.sha3(.ethereum) }
 			}
 		}
@@ -70,20 +70,17 @@ public enum ECC {
 		}
 	}
 
-	func hash(_ algo: SHA3Algorithm, _ data: Data) -> Data {
+	func hash(_ algo: SHA3Algorithm, _ bits: Int, _ data: Data) -> Data {
 		let nsData = data as NSData
 		let input = nsData.bytes.bindMemory(to: UInt8.self, capacity: data.count)
 		let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 32)
 
-		switch algo {
-		case .Ethereum: sha3_ethereum256(result, 32, input, data.count)
-		case .Standard: sha3_256(result, 32, input, data.count)
-		}
+		sha3_raw(result, 32, input, data.count, algo.rawValue, bits)
 
 		return Data(bytes: result, count: 32)
 	}
 
-	func signDeterministic(_ curve: ECC.Curve, _ strategy: ECC.Strategy, message: Data, privateKey: Data) throws -> ECC.Signature {
+	func signDeterministic(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, privateKey: Data) throws -> RFC6979.Signature {
 		var sig: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
 
 		let rec = UnsafeMutablePointer<Int32>.allocate(capacity: 1)
@@ -97,7 +94,7 @@ public enum ECC {
 			}
 		}
 		if c == 0 {
-			throw ECC.Error.invalidKey
+			throw RFC6979.Error.invalidKey
 		}
 
 		var r: [UInt8] = []
