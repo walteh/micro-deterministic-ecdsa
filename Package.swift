@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-	name: "ecdsa",
+	name: "swift-ecc",
 	platforms: [
 		.iOS(.v16),
 		.macOS(.v13),
