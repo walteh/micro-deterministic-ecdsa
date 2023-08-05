@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "07BA3336-C99D-4F0F-9D92-6F2CE730B01C",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "RFC6979Tests",
+        "name" : "RFC6979Tests"
+      }
+    }
+  ],
+  "version" : 1
+}
