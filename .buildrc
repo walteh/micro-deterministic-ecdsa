@@ -1,0 +1,5 @@
+{
+    version: 0,
+    on: macos,
+    packages: [{ name: swift-rfc6979, custom: { scheme: } }],
+}
