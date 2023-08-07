@@ -71,3 +71,5 @@ int secp256k1_i128_check_pow2(const secp256k1_int128 *r, unsigned int n) {
 	VERIFY_CHECK(n < 127);
 	return (*r == (int128_t)1 << n);
 }
+
+static inline uint64_t secp256k1_i128_to_u64(const secp256k1_int128 *a) { return (uint64_t)*a; }

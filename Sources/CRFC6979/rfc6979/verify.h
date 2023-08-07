@@ -30,4 +30,13 @@ int verify_rfc6979(
 
 int compute_public_key_rfc6979(const uint8_t *private_key, uint8_t *public_key, uECC_Curve curve);
 
+int recover_public_key_rfc6979(
+	const uint8_t *signature,
+	const uint8_t *hash,
+	unsigned hash_size,
+	int recid,
+	uint8_t *recovered_pub,
+	uECC_Curve curve
+);
+
 #endif /* verify_h */

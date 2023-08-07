@@ -26,3 +26,14 @@ int verify_rfc6979(
 int compute_public_key_rfc6979(const uint8_t *private_key, uint8_t *public_key, uECC_Curve curve) {
 	return uECC_compute_public_key(private_key, public_key, curve);
 }
+
+int recover_public_key_rfc6979(
+	const uint8_t *signature,
+	const uint8_t *hash,
+	unsigned hash_size,
+	int recid,
+	uint8_t *recovered_pub,
+	uECC_Curve curve
+) {
+	return uECC_recover(signature, hash, hash_size, recid, recovered_pub, curve);
+}

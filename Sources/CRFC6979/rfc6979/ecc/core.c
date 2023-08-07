@@ -9,6 +9,8 @@
 // ---------------------------------------------------------------------
 
 #include "core.h"
+#include "common.h"
+#include <stdint.h>
 
 int uECC_curve_private_key_size(uECC_Curve curve) { return BITS_TO_BYTES(curve->num_n_bits); }
 
@@ -350,4 +352,80 @@ int uECC_verify(
 
 	/* Accept only if v == r. */
 	return (int)(uECC_vli_equal(rx, r, num_words));
+}
+
+/* ECC Point Addition R = P + Q*/
+static void uECC_point_add(const uECC_word_t *R, const uECC_word_t *P, const uECC_word_t *Q, uECC_Curve curve) {}
+
+static void uECC_vli_rshift(uECC_word_t *result, const uECC_word_t *vli, unsigned int shift) {}
+
+static int uECC_point_cmp(const uECC_word_t *P, const uECC_word_t *Q, uECC_Curve curve) { return 0; }
+
+int uECC_recover(
+	const uint8_t *signature,
+	const uint8_t *message_hash,
+	unsigned hash_size,
+	int recid,
+	uint8_t *public_key_recovered,
+	uECC_Curve curve
+) {
+	uECC_word_t r[uECC_MAX_WORDS], s[uECC_MAX_WORDS];
+	uECC_word_t e[uECC_MAX_WORDS], z[uECC_MAX_WORDS];
+	uECC_word_t u1[uECC_MAX_WORDS], u2[uECC_MAX_WORDS];
+	uECC_word_t R[uECC_MAX_WORDS * 2], G[uECC_MAX_WORDS * 2], Q_A[uECC_MAX_WORDS * 2];
+	const wordcount_t num_words	  = curve->num_words;
+	const wordcount_t num_n_words = BITS_TO_WORDS(curve->num_n_bits);
+
+	uECC_vli_bytesToNative(r, signature, curve->num_bytes);
+	uECC_vli_bytesToNative(s, signature + curve->num_bytes, curve->num_bytes);
+
+	/* Check if r and s are in the interval [1, n-1] */
+	if (uECC_vli_isZero(r, num_words) || uECC_vli_isZero(s, num_words) || uECC_vli_cmp(curve->n, r, num_n_words) != 1 ||
+		uECC_vli_cmp(curve->n, s, num_n_words) != 1) {
+		return 0;
+	}
+
+	/* Calculate e */
+	bits2int(e, message_hash, hash_size, curve);
+
+	/* Get Ln leftmost bits of e */
+	uECC_vli_rshift(z, e, BITS_TO_WORDS(curve->num_n_bits));
+
+	/* Calculate u1 and u2 */
+	uECC_vli_modMult(u1, z, r, curve->n, num_n_words);
+	uECC_vli_modInv(u1, u1, curve->n, num_n_words);
+	uECC_vli_modMult(u2, s, r, curve->n, num_n_words);
+	uECC_vli_modInv(u2, u2, curve->n, num_n_words);
+
+	/* Compute the curve point R */
+	uECC_vli_set(R, r, num_words);
+	for (int j = 0; j < recid / 2; j++) {
+		uECC_vli_add(R, R, curve->n, num_words);
+	}
+
+	/* Try all possible curve points R */
+	for (int i = 0; i < 2; i++) {
+		if (!uECC_valid_point(R, curve)) {
+			return 0;
+		}
+
+		/* Calculate Q_A = u1*G + u2*R */
+		uECC_vli_set(G, curve->G, num_words);
+		uECC_vli_set(G + num_words, curve->G + num_words, num_words);
+		EccPoint_mult(R, G, u1, 0, num_n_words + 1, curve);
+		EccPoint_mult(Q_A, R, u2, 0, num_n_words + 1, curve);
+		uECC_point_add(Q_A, Q_A, R, curve);
+
+		if (uECC_point_cmp(Q_A, public_key_recovered, curve)) {
+			return 1;
+		}
+
+		/* If the first y coordinate (j=0) didn't work, try the second one (j=1). */
+		if (i == 0) {
+			// to adjust
+			// uECC_vli_modSub(R + num_words, curve->p, R + num_words, i, num_words);
+		}
+	}
+
+	return 0;
 }

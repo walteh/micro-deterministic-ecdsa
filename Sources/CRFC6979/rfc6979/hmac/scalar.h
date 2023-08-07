@@ -13,6 +13,12 @@
 
 #include <stdint.h>
 
+#include "hash.h"
+#include "int128.h"
+#include "modinv.h"
+
+#include <string.h>
+
 #define VG_CHECK_VERIFY(x, y)
 
 /** A scalar modulo the group order of the secp256k1 curve. */
@@ -108,5 +114,32 @@ int secp256k1_scalar_is_even(const secp256k1_scalar *a);
 int secp256k1_scalar_is_high(const secp256k1_scalar *a);
 
 void secp256k1_scalar_negate(secp256k1_scalar *r, const secp256k1_scalar *a);
+
+static void secp256k1_scalar_mul(secp256k1_scalar *r, const secp256k1_scalar *a, const secp256k1_scalar *b);
+
+static void secp256k1_scalar_to_signed62(secp256k1_modinv64_signed62 *r, const secp256k1_scalar *a);
+
+/* Replace x with its modular inverse mod modinfo->modulus. x must be in range [0, modulus).
+ * If x is zero, the result will be zero as well. If not, the inverse must exist (i.e., the gcd of
+ * x and modulus must be 1). These rules are automatically satisfied if the modulus is prime.
+ *
+ * On output, all of x's limbs will be in [0, 2^62).
+ */
+static void secp256k1_modinv64_var(secp256k1_modinv64_signed62 *x, const secp256k1_modinv64_modinfo *modinfo);
+
+static void secp256k1_scalar_inverse_var(secp256k1_scalar *r, const secp256k1_scalar *x);
+
+/** Find r1 and r2 such that r1+r2*lambda = k, where r1 and r2 or their
+ *  negations are maximum 128 bits long (see secp256k1_ge_mul_lambda). It is
+ *  required that r1, r2, and k all point to different objects. */
+static void secp256k1_scalar_split_lambda(
+	secp256k1_scalar *restrict r1, secp256k1_scalar *restrict r2, const secp256k1_scalar *restrict k
+);
+
+/** Access bits from a scalar. All requested bits must belong to the same 32-bit limb. */
+static unsigned int secp256k1_scalar_get_bits(const secp256k1_scalar *a, unsigned int offset, unsigned int count);
+
+/** Access bits from a scalar. Not constant time. */
+static unsigned int secp256k1_scalar_get_bits_var(const secp256k1_scalar *a, unsigned int offset, unsigned int count);
 
 #endif /* scalar_h */

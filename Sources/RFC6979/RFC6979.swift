@@ -73,6 +73,10 @@ public enum RFC6979 {
 			let v = data.subdata(in: 64 ..< 65).first!
 			return Signature(s: s, r: r, v: v)
 		}
+
+		var binaryV: UInt8 {
+			return self.v - 27
+		}
 	}
 
 	static func hash(_ algo: SHA3Algorithm, _ bits: Int32, _ data: Data) -> Data {
@@ -162,37 +166,37 @@ public enum RFC6979 {
 		return RFC6979.hash(.Ethereum, 256, wrk)[12 ..< 32]
 	}
 
-	// static func recover(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, signature: RFC6979.Signature) throws -> Data {
-	// 	let digest = strategy.hasher(message)
+	// 	(
+	// 	const uint8_t *signature,
+	// 	const uint8_t *hash,
+	// 	unsigned hash_size,
+	// 	int recid,
+	// 	uint8_t *recovered_pub,
+	// 	uECC_Curve curve
+	// )
 
-	// 	let sig = signature.serialize()
+	static func recover(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, signature: RFC6979.Signature) throws -> Data {
+		let digest = strategy.hasher(message)
 
-	// 	var pub: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
+		let sig = signature.serialize()
 
-	// 	let c = digest.withUnsafeBytes { d in
-	// 		sig.withUnsafeBytes { s in
-	// 			recover_public_key_rfc6979(d.baseAddress, s.baseAddress, pub, curve.load)
-	// 		}
-	// 	}
-	// 	if c == 0 {
-	// 		throw RFC6979.Error.invalidSignature
-	// 	}
+		let pub: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
+		defer { pub.deallocate() }
 
-	// 	var x: [UInt8] = []
-	// 	for _ in 0 ..< 32 {
-	// 		x.append(pub.pointee)
-	// 		pub = pub.successor()
-	// 	}
+		let c = digest.withUnsafeBytes { d in
+			sig.withUnsafeBytes { s in
+				recover_public_key_rfc6979(s.baseAddress, d.baseAddress, 32, Int32(signature.binaryV), pub, curve.load)
+			}
+		}
+		if c == 0 {
+			throw RFC6979.Error.invalidSignature
+		}
 
-	// 	var y: [UInt8] = []
-	// 	for _ in 32 ..< 64 {
-	// 		y.append(pub.pointee)
-	// 		pub = pub.successor()
-	// 	}
+		return Data([4]) + Data(UnsafeBufferPointer(start: pub, count: 64))
+	}
 
-	// 	return Data([4]) + Data(x) + Data(y)
-	// }
-
+	// c35c2ee8de0116f828acdd858af932b96e3203fa871daf3d7819a329565604df
+	// 04dfcfd60cd4d6a918398bf8174cf617097d004ac7c721b529ed9931f3239863a71f66d29e7b4de01b0ac3b0be3a0aa572da8b32cdc3ec9a81be94a5a7a3f62ba1
 	static func hexToData(_ dat: String) -> Data? {
 		let hexStr = dat.dropFirst(dat.hasPrefix("0x") ? 2 : 0)
 

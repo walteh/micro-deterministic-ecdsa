@@ -13,6 +13,7 @@
 
 #include "curve.h"
 #include "point.h"
+#include "vli.h"
 
 /* uECC_curve_private_key_size() function.
 
@@ -142,6 +143,15 @@ int uECC_verify(
 	const uint8_t *message_hash,
 	unsigned hash_size,
 	const uint8_t *signature,
+	uECC_Curve curve
+);
+
+int uECC_recover(
+	const uint8_t *signature,
+	const uint8_t *hash,
+	unsigned hash_size,
+	int recid,
+	uint8_t *recovered_pub,
 	uECC_Curve curve
 );
 

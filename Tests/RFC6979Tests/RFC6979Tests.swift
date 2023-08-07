@@ -85,4 +85,14 @@ class MainTests: XCTestCase {
 
 		XCTAssertTrue(res)
 	}
+
+	func testRecoversPublicKey() throws {
+		let resa = try RFC6979.verify(.secp256k1, .EthereumTransaction, message: self.transactionData, signature: self.transactionSignature, publicKey: self.publicKeyData)
+
+		XCTAssertTrue(resa)
+
+		let res = try RFC6979.recover(.secp256k1, .EthereumTransaction, message: self.transactionData, signature: self.transactionSignature)
+
+		XCTAssertEqual(RFC6979.dataToHex(res), self.publicKeyHex)
+	}
 }

@@ -96,4 +96,6 @@ int secp256k1_i128_eq_var(const secp256k1_int128 *a, const secp256k1_int128 *b);
  */
 int secp256k1_i128_check_pow2(const secp256k1_int128 *r, unsigned int n);
 
+static inline uint64_t secp256k1_i128_to_u64(const secp256k1_int128 *a);
+
 #endif /* nonce_h */

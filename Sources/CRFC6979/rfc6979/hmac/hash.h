@@ -14,10 +14,42 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define ARG_CHECK(cond) \
+	do {                \
+		(void)(cond);   \
+	} while (0)
+
 #define VERIFY_CHECK(cond) \
 	do {                   \
 		(void)(cond);      \
 	} while (0)
+
+/** Assert statically that expr is an integer constant expression, and run stmt.
+ *
+ * Useful for example to enforce that magnitude arguments are constant.
+ */
+#define ASSERT_INT_CONST_AND_DO(expr, stmt)                          \
+	do {                                                             \
+		switch (42) {                                                \
+			case /* ERROR: integer argument is not constant */ expr: \
+				break;                                               \
+			default:;                                                \
+		}                                                            \
+		stmt;                                                        \
+	} while (0)
+
+/* Determine the number of trailing zero bits in a (non-zero) 64-bit x.
+ * This function is only intended to be used as fallback for
+ * secp256k1_ctz64_var, but permits it to be tested separately.
+ *adapted from: secp256k1_ctz64_var_debruijn - bitcoin-core/secp256k1/src/util.h
+ */
+static inline int secp256k1_ctz64_var(uint64_t x) {
+	static const uint8_t debruijn[64] = {0,	 1,	 2,	 53, 3,	 7,	 54, 27, 4,	 38, 41, 8,	 34, 55, 48, 28,
+										 62, 5,	 39, 46, 44, 42, 22, 9,	 24, 35, 59, 56, 49, 18, 29, 11,
+										 63, 52, 6,	 26, 37, 40, 33, 47, 61, 45, 43, 21, 23, 58, 17, 10,
+										 51, 25, 36, 32, 60, 20, 57, 16, 50, 31, 19, 15, 30, 14, 13, 12};
+	return debruijn[(uint64_t)((x & -x) * 0x022FDD63CC95386DU) >> 58];
+}
 
 #define Ch(x, y, z)	 ((z) ^ ((x) & ((y) ^ (z))))
 #define Maj(x, y, z) (((x) & (y)) | ((z) & ((x) | (y))))

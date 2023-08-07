@@ -122,6 +122,8 @@ uECC_Curve uECC_secp256k1(void);
 #error "Unsupported value for uECC_WORD_SIZE"
 #endif
 
+#define VERIFY = 1
+
 // #if defined(__SIZEOF_INT128__) || ((__clang_major__ * 100 + __clang_minor__) >= 302)
 #define SUPPORTS_INT128 1
 // #else
@@ -136,10 +138,6 @@ typedef uint64_t uECC_word_t;
 // #if SUPPORTS_INT128
 typedef unsigned __int128 uECC_dword_t;
 // #endif
-
-typedef struct {
-	unsigned char data[65];
-} secp256k1_ecdsa_recoverable_signature;
 
 #define HIGH_BIT_SET		 0x8000000000000000ull
 #define uECC_WORD_BITS		 64
