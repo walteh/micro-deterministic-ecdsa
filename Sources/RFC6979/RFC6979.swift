@@ -132,10 +132,8 @@ public enum RFC6979 {
 				verify_rfc6979(pub.baseAddress, d.baseAddress, 32, s.baseAddress, curve.load)
 			}
 		}
-		if c == 0 {
-			throw RFC6979.Error.invalidSignature
-		}
-		return true
+
+		return c == 1
 	}
 
 	static func publicKey(_ curve: RFC6979.Curve, privateKey: Data) throws -> Data {
@@ -161,37 +159,6 @@ public enum RFC6979 {
 		}
 		return RFC6979.hash(.Ethereum, 256, wrk)[12 ..< 32]
 	}
-
-	// static func recover(_ curve: RFC6979.Curve, _ strategy: RFC6979.Strategy, message: Data, signature: RFC6979.Signature) throws -> Data {
-	// 	let digest = strategy.hasher(message)
-
-	// 	let sig = signature.serialize()
-
-	// 	var pub: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
-
-	// 	let c = digest.withUnsafeBytes { d in
-	// 		sig.withUnsafeBytes { s in
-	// 			recover_public_key_rfc6979(d.baseAddress, s.baseAddress, pub, curve.load)
-	// 		}
-	// 	}
-	// 	if c == 0 {
-	// 		throw RFC6979.Error.invalidSignature
-	// 	}
-
-	// 	var x: [UInt8] = []
-	// 	for _ in 0 ..< 32 {
-	// 		x.append(pub.pointee)
-	// 		pub = pub.successor()
-	// 	}
-
-	// 	var y: [UInt8] = []
-	// 	for _ in 32 ..< 64 {
-	// 		y.append(pub.pointee)
-	// 		pub = pub.successor()
-	// 	}
-
-	// 	return Data([4]) + Data(x) + Data(y)
-	// }
 
 	static func hexToData(_ dat: String) -> Data? {
 		let hexStr = dat.dropFirst(dat.hasPrefix("0x") ? 2 : 0)

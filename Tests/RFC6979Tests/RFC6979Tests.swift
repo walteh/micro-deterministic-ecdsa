@@ -9,6 +9,14 @@ import XCTest
 @testable import RFC6979
 
 class MainTests: XCTestCase {
+	let privateKeyAltHex = "E83385AF76B2B1997326B567461FB73DD9C27EAB9E1E86D26779F4650C5F2B75".lowercased()
+	var privateKeyAltData: Data { RFC6979.hexToData(self.privateKeyAltHex)! }
+
+	var publicKeyAltData: Data { try! RFC6979.publicKey(.secp256k1, privateKey: self.privateKeyAltData) }
+	var publicKeyAltHex: String { RFC6979.dataToHex(self.publicKeyAltData) }
+	var publicKeyAltAddressData: Data { RFC6979.publicKeyToAddress(self.publicKeyAltData) }
+	var publicKeyAltAddressHex: String { RFC6979.dataToHex(self.publicKeyAltAddressData) }
+
 	let privateKeyHex = "00bb19aec0b23e3b0a221fe5c67cd7fe5ec05f882d7d79235b1a0640d3021a4f".lowercased()
 	var privateKeyData: Data { RFC6979.hexToData(self.privateKeyHex)! }
 
@@ -84,5 +92,13 @@ class MainTests: XCTestCase {
 		let res = try RFC6979.verify(.secp256k1, .EthereumTransaction, message: self.transactionData, signature: self.transactionSignature, publicKey: self.publicKeyData)
 
 		XCTAssertTrue(res)
+	}
+
+	func testVerifyEthereumTransactionBad() throws {
+		let sig = try RFC6979.sign(.secp256k1, .EthereumTransaction, message: self.transactionData, privateKey: self.privateKeyAltData)
+		let invalid = try RFC6979.verify(.secp256k1, .EthereumTransaction, message: self.transactionData, signature: sig, publicKey: self.publicKeyData)
+		let valid = try RFC6979.verify(.secp256k1, .EthereumTransaction, message: self.transactionData, signature: sig, publicKey: self.publicKeyAltData)
+		XCTAssertFalse(invalid)
+		XCTAssertTrue(valid)
 	}
 }
