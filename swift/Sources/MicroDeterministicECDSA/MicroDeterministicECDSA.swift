@@ -22,7 +22,6 @@ public enum Error: Swift.Error {
 public enum HashingAlgorithm: Int32 {
 	case Keccak256 = 1
 	case SHA3 = 2
-	// case Standard = 0
 }
 
 public enum Curve {
@@ -83,7 +82,8 @@ public struct Signature {
 }
 
 func hash(_ algo: HashingAlgorithm, _ bits: Int32, _ data: Data) -> Data {
-	if algo == .Keccak256 {
+	switch algo {
+	case .Keccak256:
 		let nsData = data as NSData
 		let input = nsData.bytes.bindMemory(to: UInt8.self, capacity: data.count)
 		let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 32)
@@ -91,8 +91,7 @@ func hash(_ algo: HashingAlgorithm, _ bits: Int32, _ data: Data) -> Data {
 		keccak256_raw(result, 32, input, data.count, algo.rawValue, bits)
 
 		return Data(bytes: result, count: 32)
-
-	} else {
+	case .SHA3:
 		// do normal hashing
 		switch bits {
 		case 256:
