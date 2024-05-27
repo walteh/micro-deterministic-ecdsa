@@ -108,6 +108,7 @@ mkapply_ds(xorin, dst[i] ^= src[i])		// xorin
 	static inline int hash(
 		uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, size_t rate, uint8_t delim, int opt
 	) {
+
 	if ((out == NULL) || ((in == NULL) && inlen != 0) || (rate >= Plen)) {
 		return -1;
 	}
@@ -127,16 +128,21 @@ mkapply_ds(xorin, dst[i] ^= src[i])		// xorin
 
 	////////////////////////////////////////////
 	/// modified for ethereum keccak256 - walter
-	if (opt == 1) {
-		// Ethereum compatibility.
-		// Clear the last block.
-		memset(a, 0, Plen);
-		// memset_s(a, 200, 0, 200);
-	} else {
-		// Clear the whole buffer.
-		// memset_s(a, 200, 0, 200);
-		memset(a, 0, Plen);
-		// memset_s(a, 200, 0, 200);
+	// if (opt == 1) {
+	// 	// Ethereum compatibility.
+	// 	// Clear the last block.
+	// 	// memset(a, 0, Plen);
+	// 	// memset_s(a, 200, 0, 200);
+	// 	memset_s(a, 200, 0, 200);
+	// } else {
+	// 	// Clear the whole buffer.
+	// 	// memset_s(a, 200, 0, 200);
+	// 	memset(a, 0, Plen);
+	// 	memset_s(a, 200, 0, 200);
+	// }
+
+	for (size_t i = 0; i < Plen; i++) {
+		a[i] = 0;
 	}
 	///////////////////////////////////////////
 
