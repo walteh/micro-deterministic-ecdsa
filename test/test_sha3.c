@@ -13,7 +13,7 @@ void test_sha3_raw() {
 	uint8_t output[32];
 
 	// Call sha3_raw
-	int result = sha3_raw(output, sizeof(output), input, strlen((const char *)input), 0, 256);
+	int result = sha3_raw(output, sizeof(output), input, strlen((const char *)input), 1, 256);
 
 	// Check the result
 	if (result == 0 && memcmp(output, expected_output, sizeof(output)) == 0) {
