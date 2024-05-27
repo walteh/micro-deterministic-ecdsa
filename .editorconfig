@@ -11,5 +11,5 @@ trim_trailing_whitespace = true
 [*.txt]
 insert_final_newline = false
 
-[*.yml, *.yaml, *.md]
+[{*.yml, *.yaml, *.md}]
 indent_style = space
