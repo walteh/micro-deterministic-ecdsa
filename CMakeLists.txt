@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(YourProjectName VERSION 1.0 LANGUAGES C)
+project(MicroDeterministicECDSA VERSION 1.0 LANGUAGES C)
 
 # Specify the version of the project.
 set(PROJECT_VERSION_MAJOR 1)

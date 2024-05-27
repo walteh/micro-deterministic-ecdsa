@@ -18,13 +18,19 @@ let package = Package(
 	targets: [
 		.target(
 			name: "MicroDeterministicECDSA",
-			dependencies: [],
+			dependencies: ["MicroDeterministicECDSA_C"]
 			// path: "Sources/MicroDeterministicECDSA",
-			publicHeadersPath: "../include"
+			// publicHeadersPath: "include/public.h"
+		),
+		.target(
+			name: "MicroDeterministicECDSA_C",
+			dependencies: []
+			// path: "Sources/MicroDeterministicECDSA",
+			// publicHeadersPath: "include/public.h"
 		),
 		.testTarget(
 			name: "MicroDeterministicECDSATests",
-			dependencies: ["MicroDeterministicECDSA"]
+			dependencies: ["MicroDeterministicECDSA", "MicroDeterministicECDSA_C"]
 		),
 	]
 )

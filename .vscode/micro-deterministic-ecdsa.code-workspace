@@ -4,6 +4,10 @@
 			"path": "..",
 			"name": "root"
 		},
+		{
+			"name": "swift",
+			"path": "../swift"
+		}
 	],
 	"settings": {
 		"git.followTagsWhenSync": true,
