@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <strings.h>
 
 int sign_rfc6979(
