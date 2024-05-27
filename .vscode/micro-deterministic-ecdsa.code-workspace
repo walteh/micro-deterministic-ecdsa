@@ -33,7 +33,7 @@
 			"editor.defaultFormatter": "vknabel.vscode-swiftformat"
 		},
 		"[yaml]": {
-			"editor.defaultFormatter": "esbenp.prettier-vscode",
+			"editor.defaultFormatter": "redhat.vscode-yaml",
 			"editor.formatOnSave": true,
 			"editor.tabSize": 4,
 		},
@@ -55,7 +55,7 @@
 			"*.inc": "c",
 			"*.h": "c",
 			"*.c": "c",
-			".swiftformat": "jsonc",
+			".swiftformat": "shellscript",
 		},
 		"explorer.sortOrder": "type",
 		"lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",
