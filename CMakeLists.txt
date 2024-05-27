@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.29)
 project(micro-deterministic-ecdsa LANGUAGES C)
 
 # Set the C standard to C23
-set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD 11)
 
 # Include directories (if you have header files)
 include_directories(include)
@@ -13,7 +13,7 @@ file(GLOB SOURCES src/**/*.c)
 # Create the library target
 add_library(micro-deterministic-ecdsa ${SOURCES})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c2x")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
 
 # Find all test files in the 'test' directory
 file(GLOB TEST_SOURCES test/*.c)
