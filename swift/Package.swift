@@ -3,14 +3,14 @@
 import PackageDescription
 
 let package = Package(
-	name: "swift-rfc6979",
+	name: "micro-deterministic-ecdsa",
 	platforms: [
 		.iOS(.v16),
 		.macOS(.v13),
 	],
 	products: [
 		.library(
-			name: "swift-rfc6979",
+			name: "micro-deterministic-ecdsa",
 			targets: ["RFC6979"]
 		),
 	],

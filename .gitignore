@@ -53,3 +53,6 @@ upload_dsym_results
 archive
 .archive
 Package.resolved
+.aider*
+
+zig-cache

@@ -22,7 +22,7 @@
 			"sdk/**": true,
 		},
 		"editor.codeActionsOnSave": {
-			"source.fixAll": true
+			"source.fixAll": "explicit"
 		},
 		"clang-format.executable": "/opt/homebrew/bin/clang-format",
 		"[swift]": {

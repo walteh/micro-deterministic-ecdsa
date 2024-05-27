@@ -14,8 +14,8 @@
 #ifndef sign_h
 #define sign_h
 
-#include "./ecc/core.h"
-#include "./hmac/nonce.h"
+#include "../ecc/core.h"
+#include "../hmac/nonce.h"
 
 #include <stdint.h>
 #include <stdlib.h>
