@@ -13,7 +13,7 @@ file(GLOB SOURCES src/**/*.c)
 # Create the library target
 add_library(micro-deterministic-ecdsa ${SOURCES})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c23")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c2x")
 
 # Find all test files in the 'test' directory
 file(GLOB TEST_SOURCES test/*.c)
