@@ -9,6 +9,7 @@ set(PROJECT_VERSION_MINOR 0)
 add_library(MicroDeterministicECDSA STATIC
     src/rfc6979/sign.c
     src/rfc6979/verify.c
+	src/sha3/sha3.c
 )
 
 # Include directories

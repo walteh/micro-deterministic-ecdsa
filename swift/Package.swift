@@ -11,21 +11,20 @@ let package = Package(
 	products: [
 		.library(
 			name: "micro-deterministic-ecdsa",
-			targets: ["RFC6979"]
+			targets: ["MicroDeterministicECDSA"]
 		),
 	],
 	dependencies: [],
 	targets: [
 		.target(
-			name: "CRFC6979"
-		),
-		.target(
-			name: "RFC6979",
-			dependencies: ["CRFC6979"]
+			name: "MicroDeterministicECDSA",
+			dependencies: [],
+			// path: "Sources/MicroDeterministicECDSA",
+			publicHeadersPath: "../include"
 		),
 		.testTarget(
-			name: "RFC6979Tests",
-			dependencies: ["RFC6979", "CRFC6979"]
+			name: "MicroDeterministicECDSATests",
+			dependencies: ["MicroDeterministicECDSA"]
 		),
 	]
 )
