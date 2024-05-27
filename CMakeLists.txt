@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.29)
 project(micro-deterministic-ecdsa LANGUAGES C)
 
+# Set the C standard to C23
+set(CMAKE_C_STANDARD 23)
+
 # Include directories (if you have header files)
 include_directories(include)
 
