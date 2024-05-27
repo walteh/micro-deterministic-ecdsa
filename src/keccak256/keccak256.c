@@ -11,7 +11,7 @@
 //  A single-file implementation of SHA-3 and SHAKE
 //
 
-#include "sha3.h"
+#include "keccak256.h"
 
 /******** The Keccak-f[1600] permutation ********/
 

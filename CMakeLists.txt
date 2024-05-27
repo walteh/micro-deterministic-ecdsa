@@ -13,8 +13,6 @@ file(GLOB SOURCES src/**/*.c)
 # Create the library target
 add_library(micro-deterministic-ecdsa ${SOURCES})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-
 # Find all test files in the 'test' directory
 file(GLOB TEST_SOURCES test/*.c)
 
@@ -34,7 +32,5 @@ foreach(test_file IN LISTS TEST_SOURCES)
 	add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()
 
-# target_link_libraries(micro-deterministic-ecdsa-test micro-deterministic-ecdsa)
-# add_test(NAME TestMicroDeterministicECDSA COMMAND micro-deterministic-ecdsa-test)
 enable_testing()
 

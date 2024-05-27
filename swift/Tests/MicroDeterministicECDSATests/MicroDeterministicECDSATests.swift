@@ -101,4 +101,12 @@ class MainTests: XCTestCase {
 		XCTAssertFalse(invalid)
 		XCTAssertTrue(valid)
 	}
+
+	func testSha3() {
+		let data = "hello".data(using: .utf8)!
+		let res = MicroDeterministicECDSA.hash(.Standard, 256, data)
+		let resHex = MicroDeterministicECDSA.dataToHex(res)
+
+		XCTAssertEqual(resHex, "1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8")
+	}
 }
