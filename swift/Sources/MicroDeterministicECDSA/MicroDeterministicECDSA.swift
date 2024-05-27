@@ -5,6 +5,7 @@
 //  Copyright © 2022 Walter Scott. All rights reserved.
 //
 
+import CryptoKit
 import Foundation
 
 import MicroDeterministicECDSA_src
@@ -18,9 +19,10 @@ public enum Error: Swift.Error {
 	case invalidRecID
 }
 
-public enum SHA3Algorithm: Int32 {
-	case Ethereum = 1
-	case Standard = 0
+public enum HashingAlgorithm: Int32 {
+	case Keccak256 = 1
+	case SHA3 = 2
+	// case Standard = 0
 }
 
 public enum Curve {
@@ -36,20 +38,26 @@ public enum Strategy {
 	case EthereumRecoverable
 	case EthereumTransaction
 	case EthereumMessage
+	case Standard_SHA3_256
 
 	var hasher: (Data) -> Data {
 		switch self {
-		case .EthereumRecoverable, .EthereumTransaction: return { message in MicroDeterministicECDSA.hash(.Ethereum, 256, message) }
+		case .Standard_SHA3_256: return { message in MicroDeterministicECDSA.hash(.SHA3, 256, message) }
+		case .EthereumRecoverable, .EthereumTransaction: return { message in MicroDeterministicECDSA.hash(.Keccak256, 256, message) }
 		case .EthereumMessage: return { message in
-				MicroDeterministicECDSA.hash(.Ethereum, 256, "\u{19}Ethereum Signed Message:\n\(message.count)".data(using: .ascii)! + message)
+				MicroDeterministicECDSA.hash(.Keccak256, 256, "\u{19}Ethereum Signed Message:\n\(message.count)".data(using: .ascii)! + message)
 			}
 		}
 	}
 
 	var buildRecID: (UInt8) -> UInt8 {
 		switch self {
-		case .EthereumRecoverable: return { x in x }
-		case .EthereumTransaction, .EthereumMessage: return { x in x + 27 }
+		case
+			.Standard_SHA3_256,
+			.EthereumRecoverable: return { x in x }
+		case .EthereumTransaction,
+		     .EthereumMessage:
+			return { x in x + 27 }
 		}
 	}
 }
@@ -74,29 +82,44 @@ public struct Signature {
 	}
 }
 
-func hash(_ algo: SHA3Algorithm, _ bits: Int32, _ data: Data) -> Data {
-	let nsData = data as NSData
-	let input = nsData.bytes.bindMemory(to: UInt8.self, capacity: data.count)
-	let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 32)
+func hash(_ algo: HashingAlgorithm, _ bits: Int32, _ data: Data) -> Data {
+	if algo == .Keccak256 {
+		let nsData = data as NSData
+		let input = nsData.bytes.bindMemory(to: UInt8.self, capacity: data.count)
+		let result = UnsafeMutablePointer<UInt8>.allocate(capacity: 32)
 
-	sha3_raw(result, 32, input, data.count, algo.rawValue, bits)
+		keccak256_raw(result, 32, input, data.count, algo.rawValue, bits)
 
-	return Data(bytes: result, count: 32)
+		return Data(bytes: result, count: 32)
+
+	} else {
+		// do normal hashing
+		switch bits {
+		case 256:
+			return SHA256.hash(data: data).withUnsafeBytes { Data($0) }
+		case 512:
+			return SHA512.hash(data: data).withUnsafeBytes { Data($0) }
+		case 384:
+			return SHA384.hash(data: data).withUnsafeBytes { Data($0) }
+		default:
+			fatalError("Unsupported hash size")
+		}
+	}
 }
 
-func sign(_ curve: Curve, _ strategy: Strategy, message: Data, privateKey: Data) throws -> Signature {
+func sign(message: Data, privateKey: Data, on: Curve, as strategy: Strategy) throws -> Signature {
 	let sig: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
 	defer { sig.deallocate() }
 
 	let rec: UnsafeMutablePointer<Int32> = .allocate(capacity: 1)
 	defer { rec.deallocate() }
 
-	rec.pointee = 69
+	rec.pointee = 70 // some invalid value
 
-	let digest = strategy.hasher(message)
+	let digest: Data = strategy.hasher(message)
 	let c = digest.withUnsafeBytes { d in
 		privateKey.withUnsafeBytes { p in
-			sign_rfc6979(p.baseAddress, d.baseAddress, 32, rec, sig, curve.load)
+			sign_rfc6979(p.baseAddress, d.baseAddress, 32, rec, sig, on.load)
 		}
 	}
 	if c == 0 {
@@ -112,7 +135,7 @@ func sign(_ curve: Curve, _ strategy: Strategy, message: Data, privateKey: Data)
 	)
 }
 
-func verify(_ curve: Curve, _ strategy: Strategy, message: Data, signature: Signature, publicKey: Data) throws -> Bool {
+func verify(message: Data, signature: Signature, publicKey: Data, on: Curve, as strategy: Strategy = .Standard_SHA3_256) throws -> Bool {
 	let digest = strategy.hasher(message)
 
 	let sig = signature.serialize()
@@ -128,19 +151,19 @@ func verify(_ curve: Curve, _ strategy: Strategy, message: Data, signature: Sign
 
 	let c = digest.withUnsafeBytes { d in
 		sig.withUnsafeBytes { s in
-			verify_rfc6979(pub.baseAddress, d.baseAddress, 32, s.baseAddress, curve.load)
+			verify_rfc6979(pub.baseAddress, d.baseAddress, 32, s.baseAddress, on.load)
 		}
 	}
 
 	return c == 1
 }
 
-public func publicKey(_ curve: Curve, privateKey: Data) throws -> Data {
+public func publicKeyFrom(privateKey: Data, on: Curve) throws -> Data {
 	let pub: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
 	defer { pub.deallocate() }
 
 	let c = privateKey.withUnsafeBytes { privPointer in
-		compute_public_key_rfc6979(privPointer.baseAddress, pub, curve.load)
+		compute_public_key_rfc6979(privPointer.baseAddress, pub, on.load)
 	}
 
 	if c == 0 {
@@ -150,17 +173,17 @@ public func publicKey(_ curve: Curve, privateKey: Data) throws -> Data {
 	return Data([4]) + Data(UnsafeBufferPointer(start: pub, count: 64))
 }
 
-func publicKeyToAddress(_ publicKey: Data) -> Data {
+func ethereumPublicKeyToAddressFrom(publicKey: Data) -> Data {
 	var wrk = publicKey
 	// remove the 0x04 prefix if present
 	if publicKey.count == 65, publicKey[0] == 4 {
 		wrk = publicKey[1 ..< 65]
 	}
-	return hash(.Ethereum, 256, wrk)[12 ..< 32]
+	return hash(.Keccak256, 256, wrk)[12 ..< 32]
 }
 
-func hexToData(_ dat: String) -> Data? {
-	let hexStr = dat.dropFirst(dat.hasPrefix("0x") ? 2 : 0)
+func hexToDataFrom(string: String) -> Data? {
+	let hexStr = string.dropFirst(string.hasPrefix("0x") ? 2 : 0)
 
 	guard hexStr.count % 2 == 0 else { return nil }
 
@@ -178,6 +201,6 @@ func hexToData(_ dat: String) -> Data? {
 	return newData
 }
 
-func dataToHex(_ dat: Data) -> String {
-	return dat.map { String(format: "%02hhx", $0) }.joined()
+func dataToHexFrom(data: Data) -> String {
+	return data.map { String(format: "%02hhx", $0) }.joined()
 }

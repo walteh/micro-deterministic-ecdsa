@@ -13,8 +13,8 @@ int main() {
 										 0x81, 0x27, 0x31, 0x9a, 0x09, 0xa7, 0xa3, 0x6d, 0xea, 0xc8};
 	uint8_t output[32];
 
-	// Call sha3_raw
-	int result = sha3_raw(output, sizeof(output), input, strlen((const char *)input), 1, 256);
+	// Call keccak256_raw
+	int result = keccak256_raw(output, sizeof(output), input, strlen((const char *)input), 1, 256);
 
 	// Check the result
 	if (result == 0 && memcmp(output, expected_output, sizeof(output)) == 0) {

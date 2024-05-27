@@ -149,7 +149,7 @@ mkapply_ds(xorin, dst[i] ^= src[i])		// xorin
 	return 0;
 }
 
-int sha3_raw(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt, int bits) {
+int keccak256_raw(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt, int bits) {
 	if (outlen > (bits / 8)) {
 		return -1;
 	}
