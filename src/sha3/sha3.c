@@ -43,7 +43,8 @@ static const uint64_t RC[24] = {
 	0x8000000080008081ULL,
 	0x8000000000008080ULL,
 	0x80000001ULL,
-	0x8000000080008008ULL};
+	0x8000000080008008ULL
+};
 
 /*** Helper macros to unroll the permutation. ***/
 #define rol(x, s)	(((x) << s) | ((x) >> (64 - s)))
@@ -132,7 +133,8 @@ mkapply_ds(xorin, dst[i] ^= src[i])		// xorin
 		memset(a, 0, 200);
 	} else {
 		// Clear the whole buffer.
-		memset_s(a, 200, 0, 200);
+		// memset_s(a, 200, 0, 200);
+		memset(a, 0, 200);
 	}
 	///////////////////////////////////////////
 
@@ -145,3 +147,7 @@ int sha3_raw(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int o
 	}
 	return hash(out, outlen, in, inlen, 200 - (bits / 4), 0x01, opt);
 }
+
+int funinthesun() { return 0; }
+
+int sub(int a, int b) { return a - b; }
