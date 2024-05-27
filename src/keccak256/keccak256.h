@@ -19,7 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
-int sha3_raw(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt, int bits);
+int keccak256_raw(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt, int bits);
 
-#endif /* sha3_h */
+#endif /* keccak256_h */

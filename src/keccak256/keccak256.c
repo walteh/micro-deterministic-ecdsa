@@ -11,7 +11,7 @@
 //  A single-file implementation of SHA-3 and SHAKE
 //
 
-#include "sha3.h"
+#include "keccak256.h"
 
 /******** The Keccak-f[1600] permutation ********/
 
@@ -43,7 +43,8 @@ static const uint64_t RC[24] = {
 	0x8000000080008081ULL,
 	0x8000000000008080ULL,
 	0x80000001ULL,
-	0x8000000080008008ULL};
+	0x8000000080008008ULL
+};
 
 /*** Helper macros to unroll the permutation. ***/
 #define rol(x, s)	(((x) << s) | ((x) >> (64 - s)))
@@ -107,6 +108,7 @@ mkapply_ds(xorin, dst[i] ^= src[i])		// xorin
 	static inline int hash(
 		uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, size_t rate, uint8_t delim, int opt
 	) {
+
 	if ((out == NULL) || ((in == NULL) && inlen != 0) || (rate >= Plen)) {
 		return -1;
 	}
@@ -126,22 +128,34 @@ mkapply_ds(xorin, dst[i] ^= src[i])		// xorin
 
 	////////////////////////////////////////////
 	/// modified for ethereum keccak256 - walter
-	if (opt == 1) {
-		// Ethereum compatibility.
-		// Clear the last block.
-		memset(a, 0, 200);
-	} else {
-		// Clear the whole buffer.
-		memset_s(a, 200, 0, 200);
+	// if (opt == 1) {
+	// 	// Ethereum compatibility.
+	// 	// Clear the last block.
+	// 	// memset(a, 0, Plen);
+	// 	// memset_s(a, 200, 0, 200);
+	// 	memset_s(a, 200, 0, 200);
+	// } else {
+	// 	// Clear the whole buffer.
+	// 	// memset_s(a, 200, 0, 200);
+	// 	memset(a, 0, Plen);
+	// 	memset_s(a, 200, 0, 200);
+	// }
+
+	for (size_t i = 0; i < Plen; i++) {
+		a[i] = 0;
 	}
 	///////////////////////////////////////////
 
 	return 0;
 }
 
-int sha3_raw(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt, int bits) {
+int keccak256_raw(uint8_t *out, size_t outlen, const uint8_t *in, size_t inlen, int opt, int bits) {
 	if (outlen > (bits / 8)) {
 		return -1;
 	}
 	return hash(out, outlen, in, inlen, 200 - (bits / 4), 0x01, opt);
 }
+
+int funinthesun() { return 0; }
+
+int sub(int a, int b) { return a - b; }

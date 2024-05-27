@@ -14,7 +14,7 @@
 #ifndef verify_h
 #define verify_h
 
-#include "./ecc/core.h"
+#include "../ecc/core.h"
 
 #include <stdint.h>
 #include <stdlib.h>

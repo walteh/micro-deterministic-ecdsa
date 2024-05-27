@@ -1,1 +1,1 @@
-# swift-ecc
+# micro-deterministic-ecdsa

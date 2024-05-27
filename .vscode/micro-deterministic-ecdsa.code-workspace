@@ -4,6 +4,10 @@
 			"path": "..",
 			"name": "root"
 		},
+		{
+			"name": "swift",
+			"path": "../swift"
+		}
 	],
 	"settings": {
 		"git.followTagsWhenSync": true,
@@ -12,24 +16,24 @@
 		"workbench.tree.indent": 16,
 		"editor.formatOnSave": true,
 		"files.exclude": {
-			"**/.git": true,
-			"**/.svn": true,
-			"**/.hg": true,
-			"**/CVS": true,
-			"**/.DS_Store": true,
-			"app/**": true,
-			"g/**": true,
-			"sdk/**": true,
+			".git": false,
+			// "**/.svn": true,
+			// "**/.hg": true,
+			// "**/CVS": true,
+			// "**/.DS_Store": true,
+			// "app/**": true,
+			// "g/**": true,
+			// "sdk/**": true,
 		},
 		"editor.codeActionsOnSave": {
-			"source.fixAll": true
+			"source.fixAll": "explicit"
 		},
 		"clang-format.executable": "/opt/homebrew/bin/clang-format",
 		"[swift]": {
 			"editor.defaultFormatter": "vknabel.vscode-swiftformat"
 		},
 		"[yaml]": {
-			"editor.defaultFormatter": "esbenp.prettier-vscode",
+			"editor.defaultFormatter": "redhat.vscode-yaml",
 			"editor.formatOnSave": true,
 			"editor.tabSize": 4,
 		},
@@ -51,7 +55,7 @@
 			"*.inc": "c",
 			"*.h": "c",
 			"*.c": "c",
-			".swift-format": "jsonc",
+			".swiftformat": "shellscript",
 		},
 		"explorer.sortOrder": "type",
 		"lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",

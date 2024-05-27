@@ -1,31 +1,37 @@
-// swift-tools-version:5.8
+// swift-tools-version:5.9
 
 import PackageDescription
 
 let package = Package(
-	name: "swift-rfc6979",
+	name: "MicroDeterministicECDSA",
 	platforms: [
-		.iOS(.v16),
-		.macOS(.v13),
+		.iOS(.v17),
+		.macOS(.v14),
 	],
 	products: [
 		.library(
-			name: "swift-rfc6979",
-			targets: ["RFC6979"]
+			name: "MicroDeterministicECDSA",
+			targets: ["MicroDeterministicECDSA"]
 		),
 	],
 	dependencies: [],
 	targets: [
 		.target(
-			name: "CRFC6979"
+			name: "MicroDeterministicECDSA_src",
+			dependencies: [],
+			path: "src"
 		),
+
 		.target(
-			name: "RFC6979",
-			dependencies: ["CRFC6979"]
+			name: "MicroDeterministicECDSA",
+			dependencies: ["MicroDeterministicECDSA_src"],
+			path: "swift/Sources/MicroDeterministicECDSA"
 		),
+
 		.testTarget(
-			name: "RFC6979Tests",
-			dependencies: ["RFC6979", "CRFC6979"]
+			name: "MicroDeterministicECDSATests",
+			dependencies: ["MicroDeterministicECDSA", "MicroDeterministicECDSA_src"],
+			path: "swift/Tests/MicroDeterministicECDSATests"
 		),
 	]
 )
