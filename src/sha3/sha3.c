@@ -130,10 +130,12 @@ mkapply_ds(xorin, dst[i] ^= src[i])		// xorin
 	if (opt == 1) {
 		// Ethereum compatibility.
 		// Clear the last block.
-		memset_s(a, 200, 0, 200);
+		memset(a, 0, Plen);
+		// memset_s(a, 200, 0, 200);
 	} else {
 		// Clear the whole buffer.
-		memset_s(a, 200, 0, 200);
+		// memset_s(a, 200, 0, 200);
+		memset(a, 0, Plen);
 		// memset_s(a, 200, 0, 200);
 	}
 	///////////////////////////////////////////
