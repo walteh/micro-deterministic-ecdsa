@@ -1,9 +1,9 @@
 //
-//  swift_sdkTests.swift
-//  swift-sdkTests
+//  MicroDeterministicECDSATests.swift
 //
-//  Created by walteh on 3/3/23.
+//  Created by walteh on 2023-03-03.
 //
+
 import Foundation
 import XCTest
 @testable import MicroDeterministicECDSA

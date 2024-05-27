@@ -1,13 +1,13 @@
 //
-//  swift
+//  MicroDeterministicECDSA.swift
 //
-//  Created by walteh on 12/5/22.
+//  Created by walteh on 2022-12-05.
 //  Copyright © 2022 Walter Scott. All rights reserved.
 //
 
 import Foundation
 
-import MicroDeterministicECDSA_C
+import MicroDeterministicECDSA_src
 
 public enum Error: Swift.Error {
 	case invalidKey
