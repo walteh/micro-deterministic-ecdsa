@@ -8,7 +8,7 @@
 import CryptoKit
 import Foundation
 
-import MicroDeterministicECDSA_src
+import MicroDeterministicECDSA_Src
 
 public enum Error: Swift.Error {
 	case invalidKey
