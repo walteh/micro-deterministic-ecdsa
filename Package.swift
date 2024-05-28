@@ -17,20 +17,20 @@ let package = Package(
 	dependencies: [],
 	targets: [
 		.target(
-			name: "MicroDeterministicECDSA_src",
+			name: "MicroDeterministicECDSA-Src",
 			dependencies: [],
 			path: "src"
 		),
 
 		.target(
 			name: "MicroDeterministicECDSA",
-			dependencies: ["MicroDeterministicECDSA_src"],
+			dependencies: ["MicroDeterministicECDSA-Src"],
 			path: "swift/Sources/MicroDeterministicECDSA"
 		),
 
 		.testTarget(
 			name: "MicroDeterministicECDSATests",
-			dependencies: ["MicroDeterministicECDSA", "MicroDeterministicECDSA_src"],
+			dependencies: ["MicroDeterministicECDSA", "MicroDeterministicECDSA-Src"],
 			path: "swift/Tests/MicroDeterministicECDSATests"
 		),
 	]
