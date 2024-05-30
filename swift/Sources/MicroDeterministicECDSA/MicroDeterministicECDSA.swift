@@ -106,7 +106,7 @@ func hash(_ algo: HashingAlgorithm, _ bits: Int32, _ data: Data) -> Data {
 	}
 }
 
-func sign(message: Data, privateKey: Data, on: Curve, as strategy: Strategy) throws -> Signature {
+public func sign(message: Data, privateKey: Data, on: Curve, as strategy: Strategy) throws -> Signature {
 	let sig: UnsafeMutablePointer<UInt8> = .allocate(capacity: 64)
 	defer { sig.deallocate() }
 
@@ -134,7 +134,7 @@ func sign(message: Data, privateKey: Data, on: Curve, as strategy: Strategy) thr
 	)
 }
 
-func verify(message: Data, signature: Signature, publicKey: Data, on: Curve, as strategy: Strategy = .Standard_SHA3_256) throws -> Bool {
+public func verify(message: Data, signature: Signature, publicKey: Data, on: Curve, as strategy: Strategy = .Standard_SHA3_256) throws -> Bool {
 	let digest = strategy.hasher(message)
 
 	let sig = signature.serialize()
@@ -172,7 +172,7 @@ public func publicKeyFrom(privateKey: Data, on: Curve) throws -> Data {
 	return Data([4]) + Data(UnsafeBufferPointer(start: pub, count: 64))
 }
 
-func ethereumPublicKeyToAddressFrom(publicKey: Data) -> Data {
+public func ethereumPublicKeyToAddressFrom(publicKey: Data) -> Data {
 	var wrk = publicKey
 	// remove the 0x04 prefix if present
 	if publicKey.count == 65, publicKey[0] == 4 {
@@ -181,7 +181,7 @@ func ethereumPublicKeyToAddressFrom(publicKey: Data) -> Data {
 	return hash(.Keccak256, 256, wrk)[12 ..< 32]
 }
 
-func hexToDataFrom(string: String) -> Data? {
+public func hexToDataFrom(string: String) -> Data? {
 	let hexStr = string.dropFirst(string.hasPrefix("0x") ? 2 : 0)
 
 	guard hexStr.count % 2 == 0 else { return nil }
@@ -200,6 +200,6 @@ func hexToDataFrom(string: String) -> Data? {
 	return newData
 }
 
-func dataToHexFrom(data: Data) -> String {
+public func dataToHexFrom(data: Data) -> String {
 	return data.map { String(format: "%02hhx", $0) }.joined()
 }
