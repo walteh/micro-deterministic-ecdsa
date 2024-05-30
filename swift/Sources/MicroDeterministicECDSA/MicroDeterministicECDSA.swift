@@ -81,7 +81,7 @@ public struct Signature {
 	}
 }
 
-func hash(_ algo: HashingAlgorithm, _ bits: Int32, _ data: Data) -> Data {
+public func hash(_ algo: HashingAlgorithm, _ bits: Int32, _ data: Data) -> Data {
 	switch algo {
 	case .Keccak256:
 		let nsData = data as NSData
