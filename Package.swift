@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-	name: "MicroDeterministicECDSA",
+	name: "micro-deterministic-ecdsa",
 	platforms: [
 		.iOS(.v17),
 		.macOS(.v14),
